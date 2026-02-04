@@ -1,0 +1,30 @@
+package com.mydiarie.dAIrie.dto.DailyEntryDTO;
+import java.time.LocalDate;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class UpdateDailyEntryRequestDTO {
+
+    private LocalDate date;
+
+    @Min(1)
+    @Max(5)
+    private Integer productivityRating;
+
+    @Min(1)
+    @Max(5)
+    private Integer moodRating;
+
+    @Size(min = 1, max = 3000)
+    private String content;
+}
