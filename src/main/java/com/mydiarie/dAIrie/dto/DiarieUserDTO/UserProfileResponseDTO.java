@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DiarieUserResponseDTO {
+public class UserProfileResponseDTO {
     
     private Long id;
     private String name;

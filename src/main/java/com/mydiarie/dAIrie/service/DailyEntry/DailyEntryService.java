@@ -10,7 +10,7 @@ public interface DailyEntryService {
    
     DailyEntryResponseDTO createEntry (Long userId, CreateDailyEntryRequestDTO dto);
     List<DailyEntryResponseDTO> getEntriesByUser (Long userId);
-    DailyEntryResponseDTO getEntryById (Long userId, long entryId);
+    DailyEntryResponseDTO getEntryById (Long userId, Long entryId);
     DailyEntryResponseDTO updateEntry (Long userId, Long entryId, UpdateDailyEntryRequestDTO dto);
     void deleteEntry (Long userId, Long entryId);
     

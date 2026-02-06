@@ -8,6 +8,7 @@ import com.mydiarie.dAIrie.dto.authDTO.LoginRequestDTO;
 import com.mydiarie.dAIrie.dto.authDTO.RegisterRequestDTO;
 import com.mydiarie.dAIrie.models.DiarieUser;
 import com.mydiarie.dAIrie.repository.DiarieUserRepository;
+import com.mydiarie.dAIrie.security.JwtService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,10 +16,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 
 public class AuthServiceImpl implements AuthService {
-
-    private static final String TOKEN_PLACEHOLDER = null;      
+    
     private final DiarieUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Override
 public AuthResponseDTO register(RegisterRequestDTO dto) {
@@ -34,20 +35,22 @@ public AuthResponseDTO register(RegisterRequestDTO dto) {
 
     DiarieUser savedUser = userRepository.save(user);
 
+    String token = jwtService.generateToken(savedUser.getEmail());
+
     return new AuthResponseDTO(
-    TOKEN_PLACEHOLDER,
-    savedUser.getId(),
-    savedUser.getName(),
-    savedUser.getEmail()
+            token,
+            savedUser.getId(),
+            savedUser.getName(),
+            savedUser.getEmail()
     );
 }
+
 
     @Override
 public AuthResponseDTO login(LoginRequestDTO dto) {
 
     DiarieUser user = userRepository.findByEmail(dto.getEmail())
-            .orElseThrow(() -> new RuntimeException("Email no encontrado"));
-
+            .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
     boolean passwordMatches = passwordEncoder.matches(
             dto.getPassword(),
@@ -55,16 +58,16 @@ public AuthResponseDTO login(LoginRequestDTO dto) {
     );
 
     if (!passwordMatches) {
-        throw new RuntimeException("Email o contraseña incorrectos");
+        throw new RuntimeException("Mail o contraseña incorrecto");
     }
 
+    String token = jwtService.generateToken(user.getEmail());
+
     return new AuthResponseDTO(
-            TOKEN_PLACEHOLDER, // token todavía no implementado
+            token,
             user.getId(),
             user.getName(),
             user.getEmail()
     );
 }
-
-    
 }

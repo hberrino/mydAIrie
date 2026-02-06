@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.mydiarie.dAIrie.dto.DailyEntryDTO.CreateDailyEntryRequestDTO;
 import com.mydiarie.dAIrie.dto.DailyEntryDTO.DailyEntryResponseDTO;
+import com.mydiarie.dAIrie.dto.DailyEntryDTO.UpdateDailyEntryRequestDTO;
 import com.mydiarie.dAIrie.models.DailyEntry;
 import com.mydiarie.dAIrie.models.DiarieUser;
 import com.mydiarie.dAIrie.repository.DailyEntryRepository;
@@ -56,5 +57,66 @@ public class DailyEntryServiceImpl implements DailyEntryService {
         List<DailyEntry> entries = dailyEntryRepository.findByUserIdOrderByDateDesc(userId);
         return entries.stream().map(this::toDTO).toList();
     }
+    @Override
+public DailyEntryResponseDTO getEntryById(Long userId, Long entryId) {
+
+    DailyEntry entry = dailyEntryRepository.findById(entryId)
+            .orElseThrow(() -> new RuntimeException("Entry not found"));
+
+    if (!entry.getUser().getId().equals(userId)) {
+        throw new RuntimeException("Unauthorized access to entry");
+    }
+
+    return toDTO(entry);
+}
+@Override
+public DailyEntryResponseDTO updateEntry(
+        Long userId,
+        Long entryId,
+        UpdateDailyEntryRequestDTO dto) {
+
+    DailyEntry entry = dailyEntryRepository.findById(entryId)
+            .orElseThrow(() -> new RuntimeException("Entry not found"));
+
+    if (!entry.getUser().getId().equals(userId)) {
+        throw new RuntimeException("Unauthorized access to entry");
+    }
+
+    if (dto.getDate() != null) {
+        entry.setDate(dto.getDate());
+    }
+
+    if (dto.getProductivityRating() != null) {
+        entry.setProductivityRating(dto.getProductivityRating());
+    }
+
+    if (dto.getMoodRating() != null) {
+        entry.setMoodRating(dto.getMoodRating());
+    }
+
+    if (dto.getContent() != null) {
+        entry.setContent(dto.getContent());
+    }
+
+    DailyEntry updated = dailyEntryRepository.save(entry);
+
+    return toDTO(updated);
+}
+@Override
+public void deleteEntry(Long userId, Long entryId) {
+
+    DailyEntry entry = dailyEntryRepository.findById(entryId)
+            .orElseThrow(() -> new RuntimeException("Entry not found"));
+
+    if (!entry.getUser().getId().equals(userId)) {
+        throw new RuntimeException("Unauthorized access to entry");
+    }
+
+    dailyEntryRepository.delete(entry);
+}
+
+
+
+
 
 }

@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mydiarie.dAIrie.dto.authDTO.AuthResponseDTO;
+import com.mydiarie.dAIrie.dto.authDTO.LoginRequestDTO;
 import com.mydiarie.dAIrie.dto.authDTO.RegisterRequestDTO;
 import com.mydiarie.dAIrie.service.Auth.AuthService;
 
@@ -29,6 +30,14 @@ public class AuthController {
         AuthResponseDTO response = authService.register(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
+
+        AuthResponseDTO response = authService.login(dto);
+        return ResponseEntity.ok(response);
+    
+    }
+
 
     
     
