@@ -16,6 +16,8 @@ import com.mydiarie.dAIrie.service.DailyEntry.DailyEntryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("/entries")
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class DailyEntryController {
 
     private final DailyEntryService dailyService;
 
+    @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ResponseEntity<DailyEntryResponseDTO> createEntry(
             @Valid @RequestBody CreateDailyEntryRequestDTO dto,
@@ -33,6 +36,7 @@ public class DailyEntryController {
                 .body(dailyService.createEntry(principal.getName(), dto));
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping
     public ResponseEntity<List<DailyEntryResponseDTO>> getUserEntries(
             Principal principal) {
@@ -41,6 +45,7 @@ public class DailyEntryController {
                 dailyService.getEntriesByUser(principal.getName()));
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/{id}")
     public ResponseEntity<DailyEntryResponseDTO> getEntry(
             @PathVariable Long id,
@@ -50,6 +55,7 @@ public class DailyEntryController {
                 dailyService.getEntryById(principal.getName(), id));
     }
 
+    @PreAuthorize("hasRole('USER')")
     @PatchMapping("/{id}")
     public ResponseEntity<DailyEntryResponseDTO> updateEntry(
             @PathVariable Long id,
@@ -60,6 +66,7 @@ public class DailyEntryController {
                 dailyService.updateEntry(principal.getName(), id, dto));
     }
 
+    @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEntry(
             @PathVariable Long id,
@@ -68,4 +75,5 @@ public class DailyEntryController {
         dailyService.deleteEntry(principal.getName(), id);
         return ResponseEntity.noContent().build();
     }
+
 }

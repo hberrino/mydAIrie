@@ -14,60 +14,55 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-
 public class AuthServiceImpl implements AuthService {
-    
+
     private final DiarieUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     @Override
-public AuthResponseDTO register(RegisterRequestDTO dto) {
+    public AuthResponseDTO register(RegisterRequestDTO dto) {
 
-    if (userRepository.existsByEmail(dto.getEmail())) {
-        throw new RuntimeException("Email ya registrado");
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new RuntimeException("Email ya registrado");
+        }
+
+        DiarieUser user = new DiarieUser();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRole("ROLE_USER"); // rol por defecto
+
+        DiarieUser savedUser = userRepository.save(user);
+
+        String token = jwtService.generateToken(savedUser.getEmail(), savedUser.getRole());
+
+        return new AuthResponseDTO(
+                token,
+                savedUser.getId(),
+                savedUser.getName(),
+                savedUser.getEmail(),
+                savedUser.getRole()
+        );
     }
-
-    DiarieUser user = new DiarieUser();
-    user.setName(dto.getName());
-    user.setEmail(dto.getEmail());
-    user.setPassword(passwordEncoder.encode(dto.getPassword()));
-
-    DiarieUser savedUser = userRepository.save(user);
-
-    String token = jwtService.generateToken(savedUser.getEmail());
-
-    return new AuthResponseDTO(
-            token,
-            savedUser.getId(),
-            savedUser.getName(),
-            savedUser.getEmail()
-    );
-}
-
 
     @Override
-public AuthResponseDTO login(LoginRequestDTO dto) {
+    public AuthResponseDTO login(LoginRequestDTO dto) {
 
-    DiarieUser user = userRepository.findByEmail(dto.getEmail())
-            .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+        DiarieUser user = userRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new RuntimeException("Mail o contraseña incorrecto"));
 
-    boolean passwordMatches = passwordEncoder.matches(
-            dto.getPassword(),
-            user.getPassword()
-    );
+        boolean passwordMatches = passwordEncoder.matches(dto.getPassword(), user.getPassword());
+        if (!passwordMatches) throw new RuntimeException("Mail o contraseña incorrecto");
 
-    if (!passwordMatches) {
-        throw new RuntimeException("Mail o contraseña incorrecto");
+        String token = jwtService.generateToken(user.getEmail(), user.getRole());
+
+        return new AuthResponseDTO(
+                token,
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole()
+        );
     }
-
-    String token = jwtService.generateToken(user.getEmail());
-
-    return new AuthResponseDTO(
-            token,
-            user.getId(),
-            user.getName(),
-            user.getEmail()
-    );
-}
 }

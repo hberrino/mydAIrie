@@ -35,6 +35,9 @@ public class DiarieUser {
 
     @NotBlank
     private String password;
+    
+    @NotBlank
+    private String role = "ROLE_USER";
 
     private LocalDateTime createdAt;
 

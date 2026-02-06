@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import com.mydiarie.dAIrie.dto.DailyEntryDTO.CreateDailyEntryRequestDTO;
 import com.mydiarie.dAIrie.dto.DailyEntryDTO.DailyEntryResponseDTO;
 import com.mydiarie.dAIrie.dto.DailyEntryDTO.UpdateDailyEntryRequestDTO;
+import com.mydiarie.dAIrie.exception.ResourceNotFoundException;
+import com.mydiarie.dAIrie.exception.UnauthorizedException;
 import com.mydiarie.dAIrie.models.DailyEntry;
 import com.mydiarie.dAIrie.models.DiarieUser;
 import com.mydiarie.dAIrie.repository.DailyEntryRepository;
@@ -37,7 +39,7 @@ public class DailyEntryServiceImpl implements DailyEntryService {
     public DailyEntryResponseDTO createEntry(String email, CreateDailyEntryRequestDTO dto) {
 
         DiarieUser user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         DailyEntry entry = new DailyEntry();
         entry.setDate(dto.getDate());
@@ -47,66 +49,61 @@ public class DailyEntryServiceImpl implements DailyEntryService {
         entry.setUser(user);
 
         DailyEntry savedEntry = dailyEntryRepository.save(entry);
-
         return toDTO(savedEntry);
     }
 
     @Override
     public List<DailyEntryResponseDTO> getEntriesByUser(String email) {
 
+        DiarieUser user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         List<DailyEntry> entries =
                 dailyEntryRepository.findByUserEmailOrderByDateDesc(email);
-
         return entries.stream().map(this::toDTO).toList();
     }
 
     @Override
     public DailyEntryResponseDTO getEntryById(String email, Long entryId) {
 
-        DailyEntry entry = dailyEntryRepository
-                .findByIdAndUserEmail(entryId, email)
-                .orElseThrow(() -> new RuntimeException("Entry not found"));
+        DailyEntry entry = dailyEntryRepository.findById(entryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Entry not found"));
+
+        if (!entry.getUser().getEmail().equals(email)) {
+            throw new UnauthorizedException("Unauthorized access to entry");
+        }
 
         return toDTO(entry);
     }
 
     @Override
-    public DailyEntryResponseDTO updateEntry(
-            String email,
-            Long entryId,
-            UpdateDailyEntryRequestDTO dto) {
+    public DailyEntryResponseDTO updateEntry(String email, Long entryId, UpdateDailyEntryRequestDTO dto) {
 
-        DailyEntry entry = dailyEntryRepository
-                .findByIdAndUserEmail(entryId, email)
-                .orElseThrow(() -> new RuntimeException("Entry not found"));
+        DailyEntry entry = dailyEntryRepository.findById(entryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Entry not found"));
 
-        if (dto.getDate() != null) {
-            entry.setDate(dto.getDate());
+        if (!entry.getUser().getEmail().equals(email)) {
+            throw new UnauthorizedException("Unauthorized access to entry");
         }
 
-        if (dto.getProductivityRating() != null) {
-            entry.setProductivityRating(dto.getProductivityRating());
-        }
-
-        if (dto.getMoodRating() != null) {
-            entry.setMoodRating(dto.getMoodRating());
-        }
-
-        if (dto.getContent() != null) {
-            entry.setContent(dto.getContent());
-        }
+        if (dto.getDate() != null) entry.setDate(dto.getDate());
+        if (dto.getProductivityRating() != null) entry.setProductivityRating(dto.getProductivityRating());
+        if (dto.getMoodRating() != null) entry.setMoodRating(dto.getMoodRating());
+        if (dto.getContent() != null) entry.setContent(dto.getContent());
 
         DailyEntry updated = dailyEntryRepository.save(entry);
-
         return toDTO(updated);
     }
 
     @Override
     public void deleteEntry(String email, Long entryId) {
 
-        DailyEntry entry = dailyEntryRepository
-                .findByIdAndUserEmail(entryId, email)
-                .orElseThrow(() -> new RuntimeException("Entry not found"));
+        DailyEntry entry = dailyEntryRepository.findById(entryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Entry not found"));
+
+        if (!entry.getUser().getEmail().equals(email)) {
+            throw new UnauthorizedException("Unauthorized access to entry");
+        }
 
         dailyEntryRepository.delete(entry);
     }
