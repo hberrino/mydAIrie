@@ -1,9 +1,11 @@
 package com.mydiarie.dAIrie.controller;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.mydiarie.dAIrie.dto.DailyEntryDTO.CreateDailyEntryRequestDTO;
@@ -17,55 +19,53 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/entries")
 @RequiredArgsConstructor
+@Validated
 public class DailyEntryController {
 
     private final DailyEntryService dailyService;
 
     @PostMapping
     public ResponseEntity<DailyEntryResponseDTO> createEntry(
-            @RequestParam Long userId,
-            @Valid @RequestBody CreateDailyEntryRequestDTO dto) {
+            @Valid @RequestBody CreateDailyEntryRequestDTO dto,
+            Principal principal) {
 
-        DailyEntryResponseDTO response = dailyService.createEntry(userId, dto);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(dailyService.createEntry(principal.getName(), dto));
     }
 
     @GetMapping
-    public ResponseEntity<List<DailyEntryResponseDTO>> getEntriesByUser(
-            @RequestParam Long userId) {
-
-        return ResponseEntity.ok(dailyService.getEntriesByUser(userId));
-    }
-
-    @GetMapping("/{entryId}")
-    public ResponseEntity<DailyEntryResponseDTO> getEntryById(
-            @RequestParam Long userId,
-            @PathVariable Long entryId) {
+    public ResponseEntity<List<DailyEntryResponseDTO>> getUserEntries(
+            Principal principal) {
 
         return ResponseEntity.ok(
-                dailyService.getEntryById(userId, entryId)
-        );
+                dailyService.getEntriesByUser(principal.getName()));
     }
 
-    @PutMapping("/{entryId}")
+    @GetMapping("/{id}")
+    public ResponseEntity<DailyEntryResponseDTO> getEntry(
+            @PathVariable Long id,
+            Principal principal) {
+
+        return ResponseEntity.ok(
+                dailyService.getEntryById(principal.getName(), id));
+    }
+
+    @PatchMapping("/{id}")
     public ResponseEntity<DailyEntryResponseDTO> updateEntry(
-            @RequestParam Long userId,
-            @PathVariable Long entryId,
-            @Valid @RequestBody UpdateDailyEntryRequestDTO dto) {
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateDailyEntryRequestDTO dto,
+            Principal principal) {
 
         return ResponseEntity.ok(
-                dailyService.updateEntry(userId, entryId, dto)
-        );
+                dailyService.updateEntry(principal.getName(), id, dto));
     }
 
-    @DeleteMapping("/{entryId}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEntry(
-            @RequestParam Long userId,
-            @PathVariable Long entryId) {
+            @PathVariable Long id,
+            Principal principal) {
 
-        dailyService.deleteEntry(userId, entryId);
-
+        dailyService.deleteEntry(principal.getName(), id);
         return ResponseEntity.noContent().build();
     }
 }

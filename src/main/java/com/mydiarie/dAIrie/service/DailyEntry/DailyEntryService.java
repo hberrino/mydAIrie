@@ -8,11 +8,11 @@ import com.mydiarie.dAIrie.dto.DailyEntryDTO.UpdateDailyEntryRequestDTO;
 
 public interface DailyEntryService {
    
-    DailyEntryResponseDTO createEntry (Long userId, CreateDailyEntryRequestDTO dto);
-    List<DailyEntryResponseDTO> getEntriesByUser (Long userId);
-    DailyEntryResponseDTO getEntryById (Long userId, Long entryId);
-    DailyEntryResponseDTO updateEntry (Long userId, Long entryId, UpdateDailyEntryRequestDTO dto);
-    void deleteEntry (Long userId, Long entryId);
+    DailyEntryResponseDTO createEntry(String email, CreateDailyEntryRequestDTO dto);
+    List<DailyEntryResponseDTO> getEntriesByUser(String email);
+    DailyEntryResponseDTO getEntryById (String email, Long entryId);
+    DailyEntryResponseDTO updateEntry (String email, Long entryId, UpdateDailyEntryRequestDTO dto);
+    void deleteEntry (String email, Long entryId);
     
     
 }
